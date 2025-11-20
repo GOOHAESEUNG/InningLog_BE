@@ -20,10 +20,9 @@ kakao:
 
 cloud:
   aws:
-    credentials:
-      access-key: ${DEV_AWS_ACCESS_KEY}
-      secret-key: ${DEV_AWS_SECRET_KEY}
     region:
       static: ${AWS_REGION}
     s3:
       bucket: ${DEV_AWS_S3_BUCKET}
+    credentials:
+      instance-profile: true

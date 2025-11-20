@@ -35,4 +35,16 @@ public class PreSginedPutService {
         return url;
     }
 
+    public String postPutPreUrl(Long memebrId, String fileName, String contentType){
+
+        if (fileName.contains("..") || fileName.contains("/")) {
+            throw new CustomException(ErrorCode.INVALID_FILE_NAME);
+        }
+
+        String url = s3Uploader.generatePresignedUrl(
+                "post/" + memebrId +"/" +  fileName, contentType);
+
+        return url;
+    }
+
 }

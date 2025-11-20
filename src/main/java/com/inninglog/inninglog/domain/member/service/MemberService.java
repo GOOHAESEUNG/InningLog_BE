@@ -4,7 +4,7 @@ import com.inninglog.inninglog.global.exception.CustomException;
 import com.inninglog.inninglog.global.exception.ErrorCode;
 import com.inninglog.inninglog.domain.kakao.dto.KakaoUserInfoResDTO;
 import com.inninglog.inninglog.domain.member.domain.Member;
-import com.inninglog.inninglog.domain.member.dto.MemberWithFlag;
+import com.inninglog.inninglog.domain.member.dto.req.MemberWithFlagReqDto;
 import com.inninglog.inninglog.domain.member.repository.MemberRepository;
 import com.inninglog.inninglog.domain.team.domain.Team;
 import com.inninglog.inninglog.domain.team.repository.TeamRepository;
@@ -23,7 +23,7 @@ public class MemberService {
     private final TeamRepository teamRepository;
 
     @Transactional
-    public MemberWithFlag saveOrUpdateMember(KakaoUserInfoResDTO userInfo) {
+    public MemberWithFlagReqDto saveOrUpdateMember(KakaoUserInfoResDTO userInfo) {
         Optional<Member> existing = memberRepository.findByKakaoId(userInfo.getId());
 
         if (existing.isPresent()) {
@@ -31,13 +31,13 @@ public class MemberService {
             member.updateInfo(userInfo);
             log.info("📌 [saveOrUpdateMember] kakaoId={} 기존 회원 정보 업데이트: isNew=false",
                     userInfo.getId());
-            return new MemberWithFlag(member, false);
+            return new MemberWithFlagReqDto(member, false);
         } else {
             Member newMember = Member.fromKakaoDto(userInfo);
             memberRepository.save(newMember);
             log.info("📌 [saveOrUpdateMember] kakaoId={} 새 회원 가입: isNew=true",
                     userInfo.getId());
-            return new MemberWithFlag(newMember, true);
+            return new MemberWithFlagReqDto(newMember, true);
         }
     }
 

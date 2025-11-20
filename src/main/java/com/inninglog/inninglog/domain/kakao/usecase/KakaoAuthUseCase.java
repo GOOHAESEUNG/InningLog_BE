@@ -5,7 +5,7 @@ import com.inninglog.inninglog.domain.kakao.dto.KakaoUserInfoResDTO;
 import com.inninglog.inninglog.domain.kakao.service.KakaoService;
 import com.inninglog.inninglog.global.auth.service.JwtProvider;
 import com.inninglog.inninglog.domain.member.domain.Member;
-import com.inninglog.inninglog.domain.member.dto.MemberWithFlag;
+import com.inninglog.inninglog.domain.member.dto.req.MemberWithFlagReqDto;
 import com.inninglog.inninglog.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class KakaoAuthUseCase {
         String kakaoAccessToken = kakaoService.getAccessToken(code);
         KakaoUserInfoResDTO userInfo = kakaoService.getUserInfo(kakaoAccessToken);
 
-        MemberWithFlag result = memberService.saveOrUpdateMember(userInfo);
+        MemberWithFlagReqDto result = memberService.saveOrUpdateMember(userInfo);
         Member member = result.getMember();
         boolean isNewUser = result.isNew();
 

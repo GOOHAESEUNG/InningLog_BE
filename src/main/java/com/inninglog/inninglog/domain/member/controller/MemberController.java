@@ -4,10 +4,10 @@ import com.inninglog.inninglog.global.auth.CustomUserDetails;
 import com.inninglog.inninglog.global.exception.ErrorApiResponses;
 import com.inninglog.inninglog.global.response.SuccessResponse;
 import com.inninglog.inninglog.global.response.SuccessCode;
-import com.inninglog.inninglog.domain.member.dto.MemberSetupRequestDto;
+import com.inninglog.inninglog.domain.member.dto.req.MemberSetupReqDto;
 import com.inninglog.inninglog.domain.member.service.MemberService;
-import com.inninglog.inninglog.domain.member.dto.NicknameRequestDto;
-import com.inninglog.inninglog.domain.member.dto.TypeRequestDto;
+import com.inninglog.inninglog.domain.member.dto.req.NicknameReqDto;
+import com.inninglog.inninglog.domain.member.dto.req.TypeReqDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -54,7 +54,7 @@ public class MemberController {
     @PatchMapping("/nickname")
     public ResponseEntity<SuccessResponse<Void>> updateNickname(
             @AuthenticationPrincipal CustomUserDetails user,
-            @RequestBody NicknameRequestDto request
+            @RequestBody NicknameReqDto request
     ) {
         memberService.updateNickname(user.getMember().getId(), request.getNickname());
         return ResponseEntity.ok(SuccessResponse.success(SuccessCode.NICKNAME_UPDATED));
@@ -105,8 +105,8 @@ public class MemberController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "유저가 응원하는 팀 설정",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = TypeRequestDto.class)))
-            @RequestBody TypeRequestDto request
+                    content = @Content(schema = @Schema(implementation = TypeReqDto.class)))
+            @RequestBody TypeReqDto request
     ) {
         memberService.updateMemberType(user.getMember().getId(), request.getTeamShortCode());
         return ResponseEntity.ok(SuccessResponse.success(SuccessCode.TEAM_SET));
@@ -141,7 +141,7 @@ public class MemberController {
     @PostMapping("/setup")
     public ResponseEntity<SuccessResponse<Void>> setupMemberInfo(
             @AuthenticationPrincipal CustomUserDetails user,
-            @RequestBody MemberSetupRequestDto request
+            @RequestBody MemberSetupReqDto request
     ) {
         memberService.setupMemberInfo(user.getMember().getId(), request.getNickname(), request.getTeamShortCode());
         return ResponseEntity.ok(SuccessResponse.success(SuccessCode.OK));

@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: prod  # 기본은 dev로 (운영 땐 prod로 교체)
+    active: local
   jpa:
     show-sql: false
     properties:

@@ -39,6 +39,21 @@ public enum ErrorCode {
     INVALID_SEAT_SEARCH("INVALID_SEAT_SEARCH", HttpStatus.BAD_REQUEST,"존 정보 없이 열만으로는 검색할 수 없습니다."),
     INVALID_HASHTAG_REQUEST("INVALID_HASHTAG_REQUEST",HttpStatus.BAD_REQUEST, "해시태그는 최소 1개, 최대 5개까지 선택할 수 있습니다."),
 
+    //게시글 관련
+    POST_NOT_FOUND("POST_NOT_FOUND", HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
+
+    //댓글 관련
+    ROOT_COMMENT_NOT_FOUND("ROOT_COMMENT_NOT_FOUND", HttpStatus.NOT_FOUND, "존재하지 않는 상위 댓글입니다."),
+    COMMENT_NOT_FOUND("COMMENT_NOT_FOUND", HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
+
+    //좋아요 관련
+    LIKE_ALREADY_EXISTS("LIKE_ALREADY_EXISTS", HttpStatus.BAD_REQUEST, "이미 좋아요를 누른 컨텐츠입니다."),
+    LIKE_NOT_FOUND("LIKE_NOT_FOUND", HttpStatus.NOT_FOUND, "존재하지 않는 좋아요 입니다."),
+
+    //스크랩 관련
+    SCRAP_ALREADY_EXISTS("SCRAP_ALREADY_EXISTS", HttpStatus.BAD_REQUEST, "이미 스크랩한 컨텐츠입니다."),
+    SCRAP_NOT_FOUND("SCRAP_NOT_FOUND", HttpStatus.NOT_FOUND, "존재하지 않는 스크랩 입니다."),
+
     // 공통 예외
     VALIDATION_ERROR("VALIDATION_ERROR", HttpStatus.BAD_REQUEST, "요청값이 올바르지 않습니다."),
     TYPE_MISMATCH("TYPE_MISMATCH", HttpStatus.BAD_REQUEST, "요청 파라미터 타입이 올바르지 않습니다."),

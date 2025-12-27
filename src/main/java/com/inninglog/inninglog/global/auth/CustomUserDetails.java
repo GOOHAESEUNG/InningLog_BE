@@ -11,9 +11,11 @@ import java.util.List;
 public class CustomUserDetails implements UserDetails {
 
     private final Member member;
+    private final Long memberId;
 
-    public CustomUserDetails(Member member) {
+    public CustomUserDetails(Member member, Long memberId) {
         this.member = member;
+        this.memberId = memberId;
     }
 
     @Override
@@ -39,4 +41,6 @@ public class CustomUserDetails implements UserDetails {
     public Member getMember() {
         return member;
     }
+
+    public Long getMemberId() {return memberId;}
 }

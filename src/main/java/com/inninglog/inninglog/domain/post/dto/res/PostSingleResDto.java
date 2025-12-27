@@ -12,6 +12,9 @@ public record PostSingleResDto(
         @Schema(description = "작성자 요약 정보")
         MemberShortResDto member,
 
+        @Schema(description = "내가 쓴 글인지 여부")
+        boolean writedByMe,
+
         @Schema(description = "게시글 ID", example = "1")
         Long postId,
 
@@ -53,14 +56,16 @@ public record PostSingleResDto(
             Post post,
             MemberShortResDto memberShortResDto,
             ImageListResDto imageListResDto,
+            boolean writedByMe,
             boolean likedByMe,
             boolean scrapedByMe){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
         return new PostSingleResDto(
                 memberShortResDto,
+                writedByMe,
                 post.getId(),
-                post.getTeam_shortCode(),
+                post.getTeamShortCode(),
                 post.getTitle(),
                 post.getContent(),
                 post.getLikeCount(),

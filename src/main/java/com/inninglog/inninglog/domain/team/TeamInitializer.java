@@ -30,7 +30,8 @@ public class TeamInitializer implements ApplicationRunner {
                     Team.builder().name("롯데").shortCode("LT").build(),
                     Team.builder().name("한화").shortCode("HH").build(),
                     Team.builder().name("NC").shortCode("NC").build(),
-                    Team.builder().name("키움").shortCode("WO").build()
+                    Team.builder().name("키움").shortCode("WO").build(),
+                    Team.builder().name("전체").shortCode("ALL").build()
             ));
         }
     }

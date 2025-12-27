@@ -4,6 +4,7 @@ import com.inninglog.inninglog.domain.comment.domain.CommentableContent;
 import com.inninglog.inninglog.domain.like.domain.LikeableContent;
 import com.inninglog.inninglog.domain.member.domain.Member;
 import com.inninglog.inninglog.domain.post.dto.req.PostCreateReqDto;
+import com.inninglog.inninglog.domain.post.dto.req.PostUpdateReqDto;
 import com.inninglog.inninglog.domain.scrap.domain.ScrapableContent;
 import com.inninglog.inninglog.global.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
@@ -48,7 +49,7 @@ public class Post extends BaseTimeEntity implements LikeableContent, ScrapableCo
 
     private boolean isEdit=false;
 
-    private String team_shortCode;
+    private String teamShortCode;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
@@ -58,11 +59,11 @@ public class Post extends BaseTimeEntity implements LikeableContent, ScrapableCo
     @Column(nullable = false)
     private Long version = 0L;
 
-    public static Post of(PostCreateReqDto dto, String team_shortCode, Member member) {
+    public static Post of(PostCreateReqDto dto, String teamShortCode, Member member) {
         return Post.builder()
                 .title(dto.title())
                 .content(dto.content())
-                .team_shortCode(team_shortCode)
+                .teamShortCode(teamShortCode)
                 .likeCount(0L)
                 .scrapCount(0L)
                 .commentCount(0L)
@@ -106,5 +107,12 @@ public class Post extends BaseTimeEntity implements LikeableContent, ScrapableCo
         if (this.scrapCount > 0) {
             this.scrapCount--;
         }
+    }
+
+    //게시글 수정
+    public void update(PostUpdateReqDto dto){
+        this.title = dto.title();
+        this.content = dto.content();
+        this.isEdit = true;
     }
 }

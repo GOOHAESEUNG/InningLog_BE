@@ -90,7 +90,7 @@ public class JwtProvider {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        UserDetails userDetails = new CustomUserDetails(member);
+        UserDetails userDetails = new CustomUserDetails(member, member.getId());
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 

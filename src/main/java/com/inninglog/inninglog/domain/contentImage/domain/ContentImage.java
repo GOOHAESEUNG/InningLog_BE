@@ -1,7 +1,6 @@
 package com.inninglog.inninglog.domain.contentImage.domain;
 
 import com.inninglog.inninglog.domain.contentImage.dto.req.ImageCreateReqDto;
-import com.inninglog.inninglog.domain.contentImage.dto.req.ImageUploadReqDto;
 import com.inninglog.inninglog.domain.contentType.ContentType;
 import com.inninglog.inninglog.global.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
@@ -47,5 +46,9 @@ public class ContentImage extends BaseTimeEntity {
                 .contentType(contentType)
                 .targetId(targetId)
                 .build();
+    }
+
+    public void updateSequence(Integer seq) {
+        this.sequence = seq;
     }
 }

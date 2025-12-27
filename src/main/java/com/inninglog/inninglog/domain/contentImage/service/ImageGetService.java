@@ -17,8 +17,9 @@ public class ImageGetService {
 
     private final ContentImageRepository contentImageRepository;
 
+    //이미지를 디티오로 반환
     @Transactional(readOnly = true)
-    public ImageListResDto getImageList(ContentType contentType, Long targetId) {
+    public ImageListResDto getImageListToDto(ContentType contentType, Long targetId) {
         List<ContentImage> contentImages = contentImageRepository.findAllByContentTypeAndTargetIdOrderBySequenceAsc(contentType, targetId);
 
         List<ImageResDto> imageResDtos = new ArrayList<>();
@@ -35,5 +36,11 @@ public class ImageGetService {
     @Transactional(readOnly = true)
     protected ImageResDto getImage(ContentImage contentImage) {
         return ImageResDto.from(contentImage);
+    }
+
+    //이미지 리스트 반환
+    @Transactional
+    public List<ContentImage> getImageList(ContentType contentType, Long targetId) {
+        return contentImageRepository.findAllByContentTypeAndTargetIdOrderBySequenceAsc(contentType, targetId);
     }
 }

@@ -28,4 +28,16 @@ public class MemberValidateService {
             throw new CustomException(ErrorCode.TEAM_NOT_FOUND);
         }
     }
+
+    //게시글 작성자가 맞는지
+    public void validateWriter(Long memberId, Long writerId){
+        if(!memberId.equals(writerId)) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    //게시글 작성자 여부
+    public boolean checkPostWriter(Long writeMemberId, Long meId){
+        return writeMemberId.equals(meId);
+    }
 }

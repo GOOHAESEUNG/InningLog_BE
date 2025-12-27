@@ -7,6 +7,10 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+  security:
+    user:
+      name: ${SWAGGER_NAME}
+      password: ${SWAGGER_PW}
 
 jwt:
   secretKey: ${JWT_SECRET_KEY}

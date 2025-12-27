@@ -5,6 +5,7 @@ import com.inninglog.inninglog.domain.contentType.ContentValidateService;
 import com.inninglog.inninglog.domain.like.domain.Like;
 import com.inninglog.inninglog.domain.like.domain.LikeableContent;
 import com.inninglog.inninglog.domain.member.domain.Member;
+import com.inninglog.inninglog.domain.post.service.PostUpdateService;
 import com.inninglog.inninglog.domain.post.service.PostValidateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

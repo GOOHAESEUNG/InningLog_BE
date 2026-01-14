@@ -48,7 +48,9 @@ public class SecurityConfig {
                                 "/error",
                                 "/auth/**",
                                 "/api/kbo/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/login/page",
+                                "/callback"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

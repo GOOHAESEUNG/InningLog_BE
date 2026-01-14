@@ -87,7 +87,7 @@ public class PostGetController {
     })
     @GetMapping("/posts/team/{teamShortCode}")
     public ResponseEntity<SuccessResponse<SliceResponse<PostSummaryResDto>>> getPostsByTeam(
-            @Parameter(description = "팀 숏 코드 (예: LG, DOO, SSG)", example = "LG")
+            @Parameter(description = "팀 숏 코드 (예: LG, OB, LT)", example = "LG")
             @PathVariable String teamShortCode,
 
             @Parameter(description = "조회할 페이지 번호 (0부터 시작)", example = "0")

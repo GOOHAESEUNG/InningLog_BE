@@ -45,6 +45,8 @@ public class Post extends BaseTimeEntity implements LikeableContent, ScrapableCo
 
     private String thumbnailUrl;
 
+    private long imageCount;
+
     private LocalDateTime postAt;
 
     private boolean isEdit=false;
@@ -67,6 +69,7 @@ public class Post extends BaseTimeEntity implements LikeableContent, ScrapableCo
                 .likeCount(0L)
                 .scrapCount(0L)
                 .commentCount(0L)
+                .imageCount(dto.imageCount())
                 .postAt(LocalDateTime.now())
                 .isEdit(false)
                 .member(member)

@@ -3,6 +3,7 @@ package com.inninglog.inninglog.domain.post.dto.res;
 import com.inninglog.inninglog.domain.member.dto.res.MemberShortResDto;
 import com.inninglog.inninglog.domain.post.domain.Post;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.format.DateTimeFormatter;
 
 @Schema(description = "게시글 목록용 요약 DTO")
 public record PostSummaryResDto(
@@ -32,10 +33,18 @@ public record PostSummaryResDto(
         long commentCount,
 
         @Schema(description = "대표 이미지 URL (없으면 null)")
-        String thumbImageUrl
+        String thumbImageUrl,
+
+        @Schema(description = "게시글에 포함된 전체 이미지 개수", example = "3")
+        Long imageCount,
+
+        @Schema(description = "작성일", example = "2025-01-31 14:22")
+        String postAt
 ) {
 
     public static PostSummaryResDto of(Post post, MemberShortResDto member) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
         return new PostSummaryResDto(
                 post.getId(),
                 post.getTeamShortCode(),
@@ -45,7 +54,9 @@ public record PostSummaryResDto(
                 post.getLikeCount(),
                 post.getScrapCount(),
                 post.getCommentCount(),
-                post.getThumbnailUrl()
-        );
+                post.getThumbnailUrl(),
+                post.getImageCount(),
+                post.getPostAt().format(formatter)
+                );
     }
 }

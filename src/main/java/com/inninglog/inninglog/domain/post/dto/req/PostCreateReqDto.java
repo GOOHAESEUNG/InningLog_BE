@@ -14,6 +14,9 @@ public record PostCreateReqDto (
         String content,
 
         @Schema(description = "첨부 이미지 리스트")
-        List<ImageCreateReqDto> imageCreateReqDto
+        List<ImageCreateReqDto> imageCreateReqDto,
+
+        @Schema(description = "게시글에 포함된 전체 이미지 개수", example = "3")
+        Long imageCount
 ) {
 }

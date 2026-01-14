@@ -41,9 +41,9 @@ public class CommentUsecase {
 
     //댓글 목록 조회
     @Transactional(readOnly = true)
-    public CommentListResDto getComments(ContentType contentType, Long postId){
+    public CommentListResDto getComments(ContentType contentType, Long postId, Member me){
         postValidateService.getPostById(postId);
-        return commentGetService.getCommentList(contentType,postId);
+        return commentGetService.getCommentList(contentType,postId, me);
     }
 
     //댓글 삭제

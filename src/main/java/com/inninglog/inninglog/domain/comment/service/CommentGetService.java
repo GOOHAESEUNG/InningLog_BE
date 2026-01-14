@@ -5,8 +5,11 @@ import com.inninglog.inninglog.domain.comment.dto.res.CommentListResDto;
 import com.inninglog.inninglog.domain.comment.dto.res.CommentResDto;
 import com.inninglog.inninglog.domain.comment.repository.CommentRepository;
 import com.inninglog.inninglog.domain.contentType.ContentType;
+import com.inninglog.inninglog.domain.like.service.LikeValidateService;
+import com.inninglog.inninglog.domain.member.domain.Member;
 import com.inninglog.inninglog.domain.member.dto.res.MemberShortResDto;
 import com.inninglog.inninglog.domain.member.service.MemberGetService;
+import com.inninglog.inninglog.domain.member.service.MemberValidateService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,11 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentGetService {
     private final CommentRepository commentRepository;
     private final MemberGetService memberGetService;
+    private final LikeValidateService likeValidateService;
+    private final MemberValidateService memberValidateService;
 
     @Transactional(readOnly = true)
-    public CommentListResDto getCommentList(ContentType contentType, Long targetId){
+    public CommentListResDto getCommentList(ContentType contentType, Long targetId, Member me){
        List<Comment> comments =  getcomments(contentType, targetId);
-       List<CommentResDto> results = buildCommentTree(comments);
+       List<CommentResDto> results = buildCommentTree(comments, me);
 
        return CommentListResDto.from(results);
     }
@@ -37,7 +42,7 @@ public class CommentGetService {
 
     //대댓글 매핑
     @Transactional(readOnly = true)
-    protected List<CommentResDto> buildCommentTree(List<Comment> comments) {
+    protected List<CommentResDto> buildCommentTree(List<Comment> comments, Member me) {
 
         Map<Long, CommentResDto> map = new HashMap<>();
         List<CommentResDto> roots = new ArrayList<>();
@@ -45,7 +50,10 @@ public class CommentGetService {
         // 1) DTO 변환 후 map에 넣기
         for (Comment c : comments) {
             MemberShortResDto memberShortResDto = memberGetService.toMemberShortResDto(c.getMember());
-            CommentResDto dto = CommentResDto.of(c, memberShortResDto);
+
+            boolean likedByMe = likeValidateService.likedByMe(ContentType.COMMENT,c.getId(), me);
+            boolean writedByMe = memberValidateService.checkPostWriter(c.getMember().getId(), me.getId());
+            CommentResDto dto = CommentResDto.of(c, writedByMe, likedByMe, memberShortResDto);
             map.put(c.getId(), dto);
         }
 

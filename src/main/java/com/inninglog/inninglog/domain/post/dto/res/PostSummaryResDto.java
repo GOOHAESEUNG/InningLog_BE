@@ -39,12 +39,17 @@ public record PostSummaryResDto(
         Long imageCount,
 
         @Schema(description = "작성일", example = "2025-01-31 14:22")
-        String postAt
+        String postAt,
+
+        @Schema(description = "내가 좋아요 눌렀는지 여부 (마이페이지에서만 표시)", example = "true")
+        Boolean likedByMe,
+
+        @Schema(description = "내가 스크랩했는지 여부 (마이페이지에서만 표시)", example = "false")
+        Boolean scrapedByMe
 ) {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public static PostSummaryResDto of(Post post, MemberShortResDto member) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
         return new PostSummaryResDto(
                 post.getId(),
                 post.getTeamShortCode(),
@@ -56,7 +61,27 @@ public record PostSummaryResDto(
                 post.getCommentCount(),
                 post.getThumbnailUrl(),
                 post.getImageCount(),
-                post.getPostAt().format(formatter)
-                );
+                post.getPostAt().format(FORMATTER),
+                null,
+                null
+        );
+    }
+
+    public static PostSummaryResDto of(Post post, MemberShortResDto member, boolean likedByMe, boolean scrapedByMe) {
+        return new PostSummaryResDto(
+                post.getId(),
+                post.getTeamShortCode(),
+                post.getTitle(),
+                post.getContent(),
+                member,
+                post.getLikeCount(),
+                post.getScrapCount(),
+                post.getCommentCount(),
+                post.getThumbnailUrl(),
+                post.getImageCount(),
+                post.getPostAt().format(FORMATTER),
+                likedByMe,
+                scrapedByMe
+        );
     }
 }

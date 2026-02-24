@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/kbo/team-rankings")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "KBO 크롤링(FAST 서버 통신용)", description = "크롤링 관련 api")
+@Tag(name = "KBO 데이터 (내부용)", description = "크롤링 서버 통신용 API")
 public class TeamWinRateController {
 
     private final TeamWinRateService teamWinRateService;

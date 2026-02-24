@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/community")
-@Tag(name = "스크랩", description = "스크랩 관련 API")
+@Tag(name = "커뮤니티 - 소셜", description = "게시글 댓글/좋아요/스크랩 API")
 public class ScrapDeleteController {
 
     private final ScrapUsecase scrapUsecase;

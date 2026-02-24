@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/seatViews/normal")
 @RequiredArgsConstructor
-@Tag(name = "좌석 시야 검색", description = "구장 좌석 시야 후기 검색 API")
+@Tag(name = "좌석시야", description = "좌석 시야 후기 관련 API")
 public class SeatSearchController {
 
     private final SeatSearchService seatSearchService;

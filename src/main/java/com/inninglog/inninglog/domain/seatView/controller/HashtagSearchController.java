@@ -28,7 +28,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/seatViews/hashtag")
 @RequiredArgsConstructor
-@Tag(name = "좌석 시야 검색", description = "구장 좌석 시야 후기 검색 API")
+@Tag(name = "좌석시야", description = "좌석 시야 후기 관련 API")
 public class HashtagSearchController {
 
     private final HashtagSearchService hashtagSearchService;

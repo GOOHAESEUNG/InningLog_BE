@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/s3")
 @RequiredArgsConstructor
-@Tag(name = "사진 업로드", description = "S3 Presigned URL 관련 API")
+@Tag(name = "이미지", description = "이미지 업로드 관련 API")
 public class S3Controller {
 
     private final PreSginedPutService preSginedPutService;

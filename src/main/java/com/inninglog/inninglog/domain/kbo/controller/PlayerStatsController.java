@@ -20,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/kbo/player-stats")
-@Tag(name = "KBO 크롤링(FAST 서버 통신용)", description = "크롤링 관련 api")
+@Tag(name = "KBO 데이터 (내부용)", description = "크롤링 서버 통신용 API")
 public class PlayerStatsController {
 
     private final PlayerStatsService playerStatsService;

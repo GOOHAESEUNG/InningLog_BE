@@ -4,6 +4,8 @@ import com.inninglog.inninglog.domain.member.domain.Member;
 import com.inninglog.inninglog.domain.member.dto.res.MemberShortResDto;
 import com.inninglog.inninglog.domain.member.dto.res.MemberTeamResDto;
 import com.inninglog.inninglog.domain.member.repository.MemberRepository;
+import com.inninglog.inninglog.global.exception.CustomException;
+import com.inninglog.inninglog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,5 +28,11 @@ public class MemberGetService {
         return MemberTeamResDto.from(
                 member.getTeam().getShortCode()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public Member getMemberWithTeam(Long memberId) {
+        return memberRepository.findByIdWithTeam(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }

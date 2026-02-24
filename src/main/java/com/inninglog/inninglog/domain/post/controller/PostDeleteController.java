@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/community")
-@Tag(name = "게시글", description = "게시글 관련 API")
+@Tag(name = "커뮤니티 - 게시글", description = "게시글 관련 API")
 public class PostDeleteController {
     private final PostUsecase postUsecase;
 

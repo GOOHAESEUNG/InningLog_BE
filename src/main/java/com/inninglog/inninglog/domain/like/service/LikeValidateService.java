@@ -8,6 +8,8 @@ import com.inninglog.inninglog.domain.like.domain.Like;
 import com.inninglog.inninglog.domain.like.repository.LikeRepository;
 import com.inninglog.inninglog.domain.member.domain.Member;
 import com.inninglog.inninglog.global.exception.CustomException;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +28,16 @@ public class LikeValidateService {
     }
 
     //내가 좋아요 누른건지에 대한 볼린 형태 반환
-    @Transactional
+    @Transactional(readOnly = true)
     public boolean likedByMe(ContentType contentType, Long targetId, Member member){
-        return likeRepository.existsByContentTypeAndTargetIdAndMember(contentType, targetId, member);}
+        return likeRepository.existsByContentTypeAndTargetIdAndMember(contentType, targetId, member);
+    }
+
+    // N+1 최적화: 여러 targetId에 대해 좋아요 여부를 한 번에 조회
+    @Transactional(readOnly = true)
+    public Set<Long> findLikedTargetIds(ContentType contentType, List<Long> targetIds, Member member){
+        return likeRepository.findLikedTargetIds(contentType, targetIds, member);
+    }
 
     //이미 좋아요 누른건지 확인
     @Transactional

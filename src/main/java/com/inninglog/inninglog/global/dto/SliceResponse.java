@@ -1,7 +1,9 @@
 package com.inninglog.inninglog.global.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Collections;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 @Schema(description = "Slice 기반 목록 응답")
@@ -24,6 +26,24 @@ public record SliceResponse<T>(
                 slice.hasNext(),
                 slice.getNumber(),
                 slice.getSize()
+        );
+    }
+
+    public static <T> SliceResponse<T> of(List<T> content, boolean hasNext, Pageable pageable) {
+        return new SliceResponse<>(
+                content,
+                hasNext,
+                pageable.getPageNumber(),
+                pageable.getPageSize()
+        );
+    }
+
+    public static <T> SliceResponse<T> empty(Pageable pageable) {
+        return new SliceResponse<>(
+                Collections.emptyList(),
+                false,
+                pageable.getPageNumber(),
+                pageable.getPageSize()
         );
     }
 }

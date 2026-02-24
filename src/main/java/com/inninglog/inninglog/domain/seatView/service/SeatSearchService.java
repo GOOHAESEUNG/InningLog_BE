@@ -1,8 +1,10 @@
 package com.inninglog.inninglog.domain.seatView.service;
 
+import com.inninglog.inninglog.domain.contentImage.domain.ContentImage;
+import com.inninglog.inninglog.domain.contentImage.repository.ContentImageRepository;
+import com.inninglog.inninglog.domain.contentType.ContentType;
 import com.inninglog.inninglog.global.exception.CustomException;
 import com.inninglog.inninglog.global.exception.ErrorCode;
-import com.inninglog.inninglog.global.s3.S3Uploader;
 import com.inninglog.inninglog.domain.member.repository.MemberRepository;
 import com.inninglog.inninglog.domain.seatView.domain.SeatView;
 import com.inninglog.inninglog.domain.seatView.domain.SeatViewEmotionTagMap;
@@ -30,7 +32,7 @@ public class SeatSearchService {
 
     private final SeatViewRepository seatViewRepository;
     private final SeatViewEmotionTagMapRepository emotionTagMapRepository;
-    private final S3Uploader s3Uploader;
+    private final ContentImageRepository contentImageRepository;
     private final MemberRepository memberRepository;
 
     public Page<SeatViewDetailResult> searchSeats(
@@ -68,16 +70,17 @@ public class SeatSearchService {
                 .toList();
 
         Map<Long, List<SeatViewEmotionTagDto>> emotionTagMap = getEmotionTagMap(seatViewIds);
+        Map<Long, String> imageUrlMap = getImageUrlMap(seatViewIds);
 
         log.info("✅ [searchSeats] seatCount={} 검색된 좌석 수", seatViewIds.size());
 
         return seatViews.map(sv -> {
-            String presignedUrl = s3Uploader.generatePresignedGetUrl(sv.getView_media_url());
+            String imageUrl = imageUrlMap.get(sv.getId());
             List<SeatViewEmotionTagDto> emotionTags = emotionTagMap.getOrDefault(sv.getId(), List.of());
 
             return SeatViewDetailResult.from(
                     sv,
-                    presignedUrl,
+                    imageUrl,
                     sv.getZone().getName(),
                     sv.getZone().getShortCode(),
                     sv.getSection(),
@@ -105,6 +108,22 @@ public class SeatSearchService {
                                         .build(),
                                 Collectors.toList()
                         )
+                ));
+    }
+
+    private Map<Long, String> getImageUrlMap(List<Long> seatViewIds) {
+        if (seatViewIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<ContentImage> images = contentImageRepository.findAllByContentTypeAndTargetIdIn(
+                ContentType.SEATVIEW, seatViewIds);
+
+        return images.stream()
+                .collect(Collectors.toMap(
+                        ContentImage::getTargetId,
+                        ContentImage::getOriginalUrl,
+                        (existing, replacement) -> existing // 중복 시 첫 번째 이미지 유지
                 ));
     }
 }

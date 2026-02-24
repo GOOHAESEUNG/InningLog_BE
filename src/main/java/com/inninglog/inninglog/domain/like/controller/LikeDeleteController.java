@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/community")
-@Tag(name = "좋아요", description = "좋아요 관련 API")
+@Tag(name = "커뮤니티 - 소셜", description = "게시글 댓글/좋아요/스크랩 API")
 public class LikeDeleteController {
 
     private final LikeUsecase likeUsecase;

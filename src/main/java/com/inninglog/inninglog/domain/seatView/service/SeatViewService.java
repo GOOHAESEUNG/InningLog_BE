@@ -1,5 +1,9 @@
 package com.inninglog.inninglog.domain.seatView.service;
 
+import com.inninglog.inninglog.domain.contentImage.domain.ContentImage;
+import com.inninglog.inninglog.domain.contentImage.service.ImageGetService;
+import com.inninglog.inninglog.domain.contentImage.service.SeatViewImageCreateService;
+import com.inninglog.inninglog.domain.contentType.ContentType;
 import com.inninglog.inninglog.domain.seatView.domain.SeatView;
 import com.inninglog.inninglog.domain.seatView.domain.SeatViewEmotionTag;
 import com.inninglog.inninglog.domain.seatView.domain.SeatViewEmotionTagMap;
@@ -10,7 +14,6 @@ import com.inninglog.inninglog.domain.seatView.repository.SeatViewRepository;
 import com.inninglog.inninglog.domain.seatView.repository.ZoneRepository;
 import com.inninglog.inninglog.global.exception.CustomException;
 import com.inninglog.inninglog.global.exception.ErrorCode;
-import com.inninglog.inninglog.global.s3.S3Uploader;
 import com.inninglog.inninglog.domain.journal.domain.Journal;
 import com.inninglog.inninglog.domain.journal.repository.JournalRepository;
 import com.inninglog.inninglog.domain.member.domain.Member;
@@ -41,7 +44,8 @@ public class SeatViewService {
     private final SeatViewRepository seatViewRepository;
     private final SeatViewEmotionTagRepository seatViewEmotionTagRepository;
     private final SeatViewEmotionTagMapRepository seatViewEmotionTagMapRepository;
-    private final S3Uploader s3Uploader;
+    private final SeatViewImageCreateService seatViewImageCreateService;
+    private final ImageGetService imageGetService;
 
     /**
      * 좌석 시야 정보 작성
@@ -80,6 +84,9 @@ public class SeatViewService {
         SeatView seatView = SeatView.from(dto, member, journal, stadium, zone);
         journal.setSeatView(seatView);
         seatViewRepository.save(seatView);
+
+        // ContentImage 테이블에 이미지 저장
+        seatViewImageCreateService.createSeatViewImage(seatView.getId(), dto.getFileName(), memberId);
 
         // 감정 태그 매핑 저장
         for (String code : dto.getEmotionTagCodes()) {
@@ -120,7 +127,9 @@ public class SeatViewService {
                     return new CustomException(ErrorCode.SEATVIEW_NOT_FOUND);
                 });
 
-        String presignedUrl = s3Uploader.generatePresignedGetUrl(seatView.getView_media_url());
+        // ContentImage에서 이미지 URL 조회
+        List<ContentImage> images = imageGetService.getImageList(ContentType.SEATVIEW, seatViewId);
+        String imageUrl = images.isEmpty() ? null : images.get(0).getOriginalUrl();
 
         // 감정 태그 조회 (단일 좌석 기준)
         List<SeatViewEmotionTagDto> emotionTags = seatViewEmotionTagRepository
@@ -130,7 +139,7 @@ public class SeatViewService {
 
         return SeatViewDetailResult.from(
                 seatView,
-                presignedUrl,
+                imageUrl,
                 seatView.getZone().getName(),
                 seatView.getZone().getShortCode(),
                 seatView.getSection(),

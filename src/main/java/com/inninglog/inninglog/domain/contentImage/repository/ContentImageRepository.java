@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 public interface ContentImageRepository extends JpaRepository<ContentImage, Long> {
     List<ContentImage> findAllByContentTypeAndTargetIdOrderBySequenceAsc(ContentType contentType, Long targetId);
 
+    List<ContentImage> findAllByContentTypeAndTargetIdIn(ContentType contentType, List<Long> targetIds);
+
     @Modifying
     @Query("DELETE FROM Like l WHERE l.contentType = :contentType AND l.targetId = :targetId")
     void deleteAllByContent(ContentType contentType, Long targetId);

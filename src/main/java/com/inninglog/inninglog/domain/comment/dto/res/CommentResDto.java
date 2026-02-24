@@ -37,12 +37,28 @@ public record CommentResDto (
         @Schema(description = "대댓글 리스트 (재귀 구조)", nullable = true)
         List<CommentResDto> replies
 ){
+    private static final String DELETED_MESSAGE = "삭제된 댓글입니다.";
+
     public static CommentResDto of (Comment comment,
                                     boolean writedByMe,
                                     boolean likedByMe,
                                     MemberShortResDto memberShortResDto,
                                     List<CommentResDto> replies) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        if (comment.isDeleted()) {
+            return new CommentResDto(
+                    comment.getId(),
+                    null,
+                    false,
+                    DELETED_MESSAGE,
+                    comment.getCommentAt().format(formatter),
+                    0L,
+                    false,
+                    true,
+                    replies
+            );
+        }
 
         return new CommentResDto(
                 comment.getId(),
@@ -62,6 +78,21 @@ public record CommentResDto (
                                    boolean likedByMe,
                                    MemberShortResDto memberShortResDto) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        if (comment.isDeleted()) {
+            return new CommentResDto(
+                    comment.getId(),
+                    null,
+                    false,
+                    DELETED_MESSAGE,
+                    comment.getCommentAt().format(formatter),
+                    0L,
+                    false,
+                    true,
+                    new ArrayList<>()
+            );
+        }
+
         return new CommentResDto(
                 comment.getId(),
                 memberShortResDto,

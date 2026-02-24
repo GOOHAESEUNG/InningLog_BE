@@ -39,5 +39,7 @@ public class JourCreateReqDto {
     @Schema(description = "후기글 작성", example = "오늘 경기는 정말 재미있었다!")
     private String review_text;
 
-
+    @Schema(description = "공개 여부 (true: 공개, false: 비공개)", example = "false")
+    @Builder.Default
+    private boolean isPublic = false;
 }

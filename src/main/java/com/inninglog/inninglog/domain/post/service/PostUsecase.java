@@ -1,6 +1,7 @@
 package com.inninglog.inninglog.domain.post.service;
 
 import com.inninglog.inninglog.domain.comment.service.CommentDeleteService;
+import com.inninglog.inninglog.domain.comment.service.CommentGetService;
 import com.inninglog.inninglog.domain.contentImage.domain.ContentImage;
 import com.inninglog.inninglog.domain.contentImage.dto.res.ImageListResDto;
 import com.inninglog.inninglog.domain.contentImage.repository.ContentImageRepository;
@@ -17,13 +18,20 @@ import com.inninglog.inninglog.domain.member.service.MemberValidateService;
 import com.inninglog.inninglog.domain.post.domain.Post;
 import com.inninglog.inninglog.domain.post.dto.req.PostCreateReqDto;
 import com.inninglog.inninglog.domain.post.dto.req.PostUpdateReqDto;
+import com.inninglog.inninglog.domain.post.dto.res.CommunityHomePostResDto;
+import com.inninglog.inninglog.domain.post.dto.res.CommunityHomeResDto;
 import com.inninglog.inninglog.domain.post.dto.res.PostSingleResDto;
 import com.inninglog.inninglog.domain.post.dto.res.PostSummaryResDto;
 import com.inninglog.inninglog.domain.scrap.service.ScrapDeleteService;
 import com.inninglog.inninglog.domain.scrap.service.ScrapValidateService;
 import com.inninglog.inninglog.global.dto.SliceResponse;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -52,6 +60,7 @@ public class PostUsecase {
     private final ScrapDeleteService scrapDeleteService;
 
     private final CommentDeleteService commentDeleteService;
+    private final CommentGetService commentGetService;
 
     private final ContentImageRepository contentImageRepository;
 
@@ -117,5 +126,117 @@ public class PostUsecase {
                         memberGetService.toMemberShortResDto(post.getMember())
                 )
         );
+    }
+
+    //인기 게시글 조회 (좋아요 10개 이상)
+    @Transactional(readOnly = true)
+    public SliceResponse<PostSummaryResDto> getPopularPostList(Pageable pageable) {
+        Slice<Post> posts = postGetService.getPopularPosts(10L, pageable);
+        Slice<PostSummaryResDto> dtos = getPostsByTeam(posts);
+        return SliceResponse.of(dtos);
+    }
+
+    //커뮤니티 홈 조회
+    @Transactional(readOnly = true)
+    public CommunityHomeResDto getCommunityHome(Member member) {
+        Member memberWithTeam = memberGetService.getMemberWithTeam(member.getId());
+        String teamShortCode = memberWithTeam.getTeam().getShortCode();
+        Slice<Post> posts = postGetService.getPopularPosts(10L, PageRequest.of(0, 2));
+
+        List<CommunityHomePostResDto> popularPosts = posts.stream()
+                .map(post -> {
+                    boolean likedByMe = likeValidateService.likedByMe(ContentType.POST, post.getId(), member);
+                    boolean scrapedByMe = scrapValidateService.scrapedByMe(ContentType.POST, post.getId(), member);
+                    return CommunityHomePostResDto.of(post, likedByMe, scrapedByMe);
+                })
+                .toList();
+
+        return CommunityHomeResDto.of(teamShortCode, popularPosts);
+    }
+
+    //마이페이지: 내가 쓴 글 목록
+    @Transactional(readOnly = true)
+    public SliceResponse<PostSummaryResDto> getMyPosts(Member member, Pageable pageable) {
+        Slice<Post> posts = postGetService.getMyPosts(member, pageable);
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+
+        // N+1 최적화: 배치 조회
+        Set<Long> likedPostIds = likeValidateService.findLikedTargetIds(ContentType.POST, postIds, member);
+        Set<Long> scrapedPostIds = scrapValidateService.findScrapedTargetIds(ContentType.POST, postIds, member);
+
+        List<PostSummaryResDto> dtos = posts.stream()
+                .map(post -> PostSummaryResDto.of(
+                        post,
+                        memberGetService.toMemberShortResDto(post.getMember()),
+                        likedPostIds.contains(post.getId()),
+                        scrapedPostIds.contains(post.getId())
+                ))
+                .toList();
+
+        return SliceResponse.of(dtos, posts.hasNext(), pageable);
+    }
+
+    //마이페이지: 내가 댓글 단 글 목록
+    @Transactional(readOnly = true)
+    public SliceResponse<PostSummaryResDto> getMyCommentedPosts(Member member, Pageable pageable) {
+        Slice<Long> postIdSlice = commentGetService.getCommentedPostIds(member, pageable);
+        List<Long> postIds = postIdSlice.getContent();
+
+        if (postIds.isEmpty()) {
+            return SliceResponse.empty(pageable);
+        }
+
+        List<Post> posts = postGetService.findAllByIds(postIds);
+        Map<Long, Post> postMap = posts.stream()
+                .collect(Collectors.toMap(Post::getId, Function.identity()));
+
+        // N+1 최적화: 배치 조회
+        Set<Long> likedPostIds = likeValidateService.findLikedTargetIds(ContentType.POST, postIds, member);
+        Set<Long> scrapedPostIds = scrapValidateService.findScrapedTargetIds(ContentType.POST, postIds, member);
+
+        List<PostSummaryResDto> dtos = postIds.stream()
+                .map(postMap::get)
+                .filter(post -> post != null)
+                .map(post -> PostSummaryResDto.of(
+                        post,
+                        memberGetService.toMemberShortResDto(post.getMember()),
+                        likedPostIds.contains(post.getId()),
+                        scrapedPostIds.contains(post.getId())
+                ))
+                .toList();
+
+        return SliceResponse.of(dtos, postIdSlice.hasNext(), pageable);
+    }
+
+    //마이페이지: 내가 스크랩한 글 목록
+    @Transactional(readOnly = true)
+    public SliceResponse<PostSummaryResDto> getMyScrappedPosts(Member member, Pageable pageable) {
+        Slice<Long> postIdSlice = scrapValidateService.getScrappedPostIds(member, pageable);
+        List<Long> postIds = postIdSlice.getContent();
+
+        if (postIds.isEmpty()) {
+            return SliceResponse.empty(pageable);
+        }
+
+        List<Post> posts = postGetService.findAllByIds(postIds);
+        Map<Long, Post> postMap = posts.stream()
+                .collect(Collectors.toMap(Post::getId, Function.identity()));
+
+        // N+1 최적화: 배치 조회
+        Set<Long> likedPostIds = likeValidateService.findLikedTargetIds(ContentType.POST, postIds, member);
+        Set<Long> scrapedPostIds = scrapValidateService.findScrapedTargetIds(ContentType.POST, postIds, member);
+
+        List<PostSummaryResDto> dtos = postIds.stream()
+                .map(postMap::get)
+                .filter(post -> post != null)
+                .map(post -> PostSummaryResDto.of(
+                        post,
+                        memberGetService.toMemberShortResDto(post.getMember()),
+                        likedPostIds.contains(post.getId()),
+                        scrapedPostIds.contains(post.getId())
+                ))
+                .toList();
+
+        return SliceResponse.of(dtos, postIdSlice.hasNext(), pageable);
     }
 }

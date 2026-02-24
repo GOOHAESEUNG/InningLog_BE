@@ -45,3 +45,6 @@ out/
 *.env.local
 
 src/main/resources/application.properties
+
+# Node
+node_modules/

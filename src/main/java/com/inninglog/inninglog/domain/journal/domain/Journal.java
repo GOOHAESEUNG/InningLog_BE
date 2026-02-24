@@ -1,6 +1,9 @@
 package com.inninglog.inninglog.domain.journal.domain;
 
 import com.inninglog.inninglog.global.entity.BaseTimeEntity;
+import com.inninglog.inninglog.domain.comment.domain.CommentableContent;
+import com.inninglog.inninglog.domain.like.domain.LikeableContent;
+import com.inninglog.inninglog.domain.scrap.domain.ScrapableContent;
 import com.inninglog.inninglog.domain.journal.dto.req.JourCreateReqDto;
 import com.inninglog.inninglog.domain.journal.dto.req.JourUpdateReqDto;
 import com.inninglog.inninglog.domain.member.domain.Member;
@@ -19,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor//매개변수가 없는 기본 생성자를 자동으로 생성
 @Getter
 @Setter
-public class Journal extends BaseTimeEntity {
+public class Journal extends BaseTimeEntity implements CommentableContent, LikeableContent, ScrapableContent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,6 +69,57 @@ public class Journal extends BaseTimeEntity {
     @OneToOne(fetch = FetchType.LAZY)
     private SeatView seatView;
 
+    //댓글 수
+    @Builder.Default
+    private long commentCount = 0;
+
+    //좋아요 수
+    @Builder.Default
+    private long likeCount = 0;
+
+    //스크랩 수
+    @Builder.Default
+    private long scrapCount = 0;
+
+    //공개 여부
+    @Builder.Default
+    private boolean isPublic = false;
+
+    @Override
+    public void increaseCommentCount() {
+        this.commentCount++;
+    }
+
+    @Override
+    public void decreaseCommentCount() {
+        if (this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
+
+    @Override
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    @Override
+    public void decreaseLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
+
+    @Override
+    public void increaseScrapCount() {
+        this.scrapCount++;
+    }
+
+    @Override
+    public void decreaseScrapCount() {
+        if (this.scrapCount > 0) {
+            this.scrapCount--;
+        }
+    }
 
     public static Journal from(JourCreateReqDto dto, Member member, Team team, Stadium stadium) {
         ResultScore resultScore = ResultScore.of(dto.getOurScore(), dto.getTheirScore());
@@ -90,6 +144,7 @@ public class Journal extends BaseTimeEntity {
                 .emotion(dto.getEmotion())
                 .review_text(dto.getReview_text())
                 .media_url(filename)
+                .isPublic(dto.isPublic())
                 .build();
     }
 
@@ -100,6 +155,7 @@ public class Journal extends BaseTimeEntity {
         this.resultScore = ResultScore.of(dto.getOurScore(), dto.getTheirScore());
         this.emotion = dto.getEmotion();
         this.review_text = dto.getReview_text();
+        this.isPublic = dto.isPublic();
 
         // media_url 조건 분기 처리
         if (dto.getMedia_url() == null || dto.getMedia_url().trim().isEmpty()) {

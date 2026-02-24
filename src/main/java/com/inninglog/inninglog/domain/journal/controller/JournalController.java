@@ -1,6 +1,7 @@
 package com.inninglog.inninglog.domain.journal.controller;
 
 import com.inninglog.inninglog.domain.journal.dto.res.*;
+import com.inninglog.inninglog.global.dto.SliceResponse;
 import com.inninglog.inninglog.domain.journal.usecase.JournalUsecase;
 import com.inninglog.inninglog.global.auth.CustomUserDetails;
 import com.inninglog.inninglog.global.exception.ErrorApiResponses;
@@ -41,7 +42,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/journals")
-@Tag(name = "직관 일지", description = "직관 일지 관련 API")
+@Tag(name = "직관일지", description = "직관 일지 관련 API")
 public class JournalController {
 
     private final JournalService journalService;
@@ -214,7 +215,12 @@ public class JournalController {
         "gameDate": "2025-06-03 18:30",
         "supportTeamSC": "OB",
         "opponentTeamSC": "SS",
-        "stadiumSC": "JAM"
+        "stadiumSC": "JAM",
+        "likeCount": 15,
+        "commentCount": 8,
+        "scrapCount": 3,
+        "likedByMe": true,
+        "scrapedByMe": false
       }
     ],
     "pageNumber": 0,
@@ -528,6 +534,180 @@ public class JournalController {
     ) {
         JourUpdateResDto updatedJournal = journalUsecase.updateJournal(user.getMember().getId(), journalId, dto);
         return ResponseEntity.ok(SuccessResponse.success(SuccessCode.OK, updatedJournal));
+    }
+
+
+    @Operation(
+            summary = "공개 직관 일지 피드 조회",
+            description = """
+                공개 설정된 직관 일지를 조회합니다. 인증이 필요합니다.
+
+                📌 **팀 필터링**
+                - `teamShortCode=ALL`: 전체 공개 일지 조회
+                - `teamShortCode=LG`: 특정 팀(작성자 응원팀 기준) 일지만 조회
+
+                📌 **페이지네이션**
+                - 무한 스크롤 방식 (Slice 기반)
+                - `page`, `size` 파라미터로 제어
+                - 최신순(createdAt DESC)으로 정렬
+
+                📌 **응답 필드**
+                - `writedByMe`: 내가 작성한 일지인지 여부
+                - `likedByMe`: 내가 좋아요 눌렀는지 여부
+                - `scrapedByMe`: 내가 스크랩했는지 여부
+
+                ✅ 예시 요청:
+                - 전체 조회: `/journals/feed?teamShortCode=ALL&page=0&size=10`
+                - LG팬 일지만: `/journals/feed?teamShortCode=LG&page=0&size=10`
+                """
+    )
+    @ErrorApiResponses.Common
+    @ApiResponse(
+            responseCode = "200",
+            description = "피드 조회 성공",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = SliceResponse.class),
+                    examples = {
+                            @ExampleObject(name = "피드 목록", value = """
+                                {
+                                  "code": "SUCCESS",
+                                  "message": "요청이 정상적으로 처리되었습니다.",
+                                  "data": {
+                                    "content": [
+                                      {
+                                        "journalId": 123,
+                                        "thumbnailUrl": "https://s3.amazonaws.com/.../image.jpg",
+                                        "member": {
+                                          "nickName": "볼빨간스트라스버그",
+                                          "profile_url": "https://k.kakaocdn.net/.../img.jpg"
+                                        },
+                                        "writedByMe": false,
+                                        "reviewPreview": "오늘 경기 정말 재밌었다! 우리 팀이 역전승...",
+                                        "createdAt": "2025-06-03 18:30",
+                                        "likeCount": 15,
+                                        "likedByMe": true,
+                                        "commentCount": 3,
+                                        "scrapCount": 2,
+                                        "scrapedByMe": false
+                                      }
+                                    ],
+                                    "hasNext": true,
+                                    "page": 0,
+                                    "size": 10
+                                  }
+                                }
+                                """),
+                            @ExampleObject(name = "피드 없음", value = """
+                                {
+                                  "code": "SUCCESS",
+                                  "message": "요청이 정상적으로 처리되었습니다.",
+                                  "data": {
+                                    "content": [],
+                                    "hasNext": false,
+                                    "page": 0,
+                                    "size": 10
+                                  }
+                                }
+                                """)
+                    }
+            )
+    )
+    @GetMapping("/feed")
+    public ResponseEntity<SuccessResponse<SliceResponse<JournalFeedResDto>>> getPublicJournalFeed(
+            @Parameter(description = "팀 숏코드 (ALL: 전체 조회, 특정 팀코드: 해당 팀 응원 사용자 일지만)", example = "ALL")
+            @RequestParam String teamShortCode,
+
+            @Parameter(
+                    description = "페이지 번호 (0부터 시작)",
+                    example = "0",
+                    schema = @Schema(type = "integer", minimum = "0")
+            )
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(
+                    description = "페이지 크기",
+                    example = "10",
+                    schema = @Schema(type = "integer", minimum = "1", maximum = "100")
+            )
+            @RequestParam(defaultValue = "10") int size,
+
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        SliceResponse<JournalFeedResDto> result = journalUsecase.getPublicJournalFeed(user.getMemberId(), teamShortCode, pageable);
+
+        return ResponseEntity.ok(SuccessResponse.success(SuccessCode.OK, result));
+    }
+
+    @Operation(
+            summary = "내가 쓴 직관 일지 목록 조회",
+            description = """
+                내가 작성한 직관 일지 목록을 조회합니다.
+
+                ✔ 최신순(date DESC)으로 정렬되어 반환됩니다.
+                ✔ page는 0부터 시작합니다. (0=첫 페이지)
+                ✔ size는 한 페이지에서 가져올 일지 수를 의미합니다.
+                ✔ hasNext가 true이면 다음 페이지 요청이 가능합니다.
+                """,
+            tags = {"마이페이지"}
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "내가 쓴 직관 일지 목록 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SliceResponse.class),
+                            examples = {
+                                    @ExampleObject(name = "내가 쓴 직관 일지 목록", value = """
+                                        {
+                                          "code": "SUCCESS",
+                                          "message": "요청이 정상적으로 처리되었습니다.",
+                                          "data": {
+                                            "content": [
+                                              {
+                                                "journalId": 7,
+                                                "media_url": "https://inninglog-bucket.s3.ap-northeast-2.amazonaws.com/journal/1/photo123.jpeg?X-Amz-Expires=600",
+                                                "resultScore": "WIN",
+                                                "emotion": "감동",
+                                                "gameDate": "2025-06-03 18:30",
+                                                "supportTeamSC": "OB",
+                                                "opponentTeamSC": "SS",
+                                                "stadiumSC": "JAM",
+                                                "likeCount": 15,
+                                                "commentCount": 8,
+                                                "scrapCount": 3,
+                                                "likedByMe": true,
+                                                "scrapedByMe": false
+                                              }
+                                            ],
+                                            "hasNext": true,
+                                            "page": 0,
+                                            "size": 10
+                                          }
+                                        }
+                                        """)
+                            }
+                    )
+            )
+    })
+    @GetMapping("/my")
+    public ResponseEntity<SuccessResponse<SliceResponse<JournalSumListResDto>>> getMyJournals(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user,
+
+            @Parameter(description = "조회할 페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "한 페이지당 일지 개수", example = "10")
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        SliceResponse<JournalSumListResDto> result = journalUsecase.getMyJournals(user.getMember(), pageable);
+
+        return ResponseEntity.ok(SuccessResponse.success(SuccessCode.OK, result));
     }
 }
 

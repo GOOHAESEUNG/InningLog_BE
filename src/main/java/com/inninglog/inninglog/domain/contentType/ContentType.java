@@ -4,5 +4,6 @@ public enum ContentType {
     POST, // 일반 게시글
     COMMENT, //댓글
     JOURNAL,     // 직관 일지
-    MARKET       // 이닝장터
+    MARKET,      // 이닝장터
+    SEATVIEW     // 좌석 시야
 }

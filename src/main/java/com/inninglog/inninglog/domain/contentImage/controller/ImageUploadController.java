@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/images")
-@Tag(name = "사진 리스트 업로드", description = "사진 리스트 업로드 관련 API")
+@Tag(name = "이미지", description = "이미지 업로드 관련 API")
 public class ImageUploadController {
 
     private final PostImageUploadService postImageUploadService;

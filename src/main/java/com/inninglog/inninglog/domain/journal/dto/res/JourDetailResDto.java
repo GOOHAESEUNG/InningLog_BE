@@ -48,8 +48,22 @@ public class JourDetailResDto {
     @Schema(description = "후기글", example = "오늘 경기는 정말 재미있었다!", nullable = true)
     private String review_text; // optional
 
+    @Schema(description = "댓글 수", example = "5")
+    private long commentCount;
 
-    public static JourDetailResDto from(Member member, Journal journal, String presignedUrl) {
+    @Schema(description = "좋아요 수", example = "10")
+    private long likeCount;
+
+    @Schema(description = "현재 사용자의 좋아요 여부", example = "true")
+    private boolean likedByMe;
+
+    @Schema(description = "스크랩 수", example = "3")
+    private long scrapCount;
+
+    @Schema(description = "현재 사용자의 스크랩 여부", example = "false")
+    private boolean scrapedByMe;
+
+    public static JourDetailResDto from(Member member, Journal journal, String presignedUrl, boolean likedByMe, boolean scrapedByMe) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         String formattedDate = journal.getDate().format(formatter);
 
@@ -64,6 +78,11 @@ public class JourDetailResDto {
                 .emotion(journal.getEmotion())
                 .media_url(presignedUrl)
                 .review_text(journal.getReview_text())
+                .commentCount(journal.getCommentCount())
+                .likeCount(journal.getLikeCount())
+                .likedByMe(likedByMe)
+                .scrapCount(journal.getScrapCount())
+                .scrapedByMe(scrapedByMe)
                 .build();
     }
 }

@@ -32,17 +32,34 @@ public class PostGetService {
         return PostSingleResDto.of(post, memberShortResDto, imageListResDto, writedByMe, likedByMe, scrapedByMe);
     }
 
-    //게시글 목록 조회 - 팀별
+    //게시글 목록 조회 - 팀별 (N+1 최적화: Member Fetch Join 적용)
     @Transactional(readOnly = true)
     public Slice<Post> getPostsByTeam(String teamShortCode, Pageable pageable) {
-        return postRepository
-                .findByTeamShortCodeOrderByPostAtDesc(teamShortCode, pageable);
+        return postRepository.findWithMemberByTeamShortCode(teamShortCode, pageable);
     }
 
     //게시글 작성자 Id 가져오기
     @Transactional(readOnly = true)
     public Member getPostWriterId(Post post){
         return post.getMember();
+    }
+
+    //인기 게시글 목록 조회 (좋아요 수 기준)
+    @Transactional(readOnly = true)
+    public Slice<Post> getPopularPosts(long minLikeCount, Pageable pageable) {
+        return postRepository.findPopularPostsWithMember(minLikeCount, pageable);
+    }
+
+    //마이페이지: 내가 쓴 글 조회
+    @Transactional(readOnly = true)
+    public Slice<Post> getMyPosts(Member member, Pageable pageable) {
+        return postRepository.findByMemberWithMember(member, pageable);
+    }
+
+    //마이페이지: ID 목록으로 게시글 조회 (순서 유지)
+    @Transactional(readOnly = true)
+    public List<Post> findAllByIds(List<Long> ids) {
+        return postRepository.findAllByIdInWithMember(ids);
     }
 }
 
